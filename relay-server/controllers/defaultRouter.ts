@@ -4,11 +4,14 @@ import { StreamCollection, StreamInfo } from './streams'
 
 const router = Router()
 const timeout = 5000
-const servers = ['http://localhost:8000']
+const servers = process.env.SERVERS?.split(',')
 
-router.get('/servers', async (req, res) => {
-    return res.json(servers)
-})
+if (!servers) {
+    console.log("servers env: ", process.env.SERVERS)
+    throw "No servers defined"
+}
+
+console.log('Setuped with servers: ', servers)
 
 router.get('/streams', async (req, res) => {
     const streams = await getStreams(servers)
@@ -22,21 +25,25 @@ export type ServerStream = {
 }
 
 export const getStreams = async (servers: string[]): Promise<ServerStream[]> => {
-    const streams: ServerStream[] = []
-    for (const server of servers) {
-        const collection = await getStream(server)
+    try {
+        const streams: ServerStream[] = []
+        for (const server of servers) {
+            const collection = await getStream(server)
 
-        for (let key in collection.live) {
-            const stream = collection.live[key];
-            streams.push({
-                server,
-                streamName: key,
-                stream
-            })
+            for (let key in collection.live) {
+                const stream = collection.live[key];
+                streams.push({
+                    server,
+                    streamName: key,
+                    stream
+                })
+            }
         }
-    }
 
-    return streams
+        return streams
+    } catch {
+        return []
+    }
 }
 
 const getStream = async (server: string): Promise<StreamCollection> => {

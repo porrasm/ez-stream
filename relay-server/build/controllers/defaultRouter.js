@@ -11,34 +11,42 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getStreams = void 0;
 const axios_1 = __importDefault(require("axios"));
 const express_1 = require("express");
 const router = (0, express_1.Router)();
 const timeout = 5000;
-const servers = ['http://localhost:8000'];
-router.get('/servers', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    return res.json(servers);
-}));
+const servers = (_a = process.env.SERVERS) === null || _a === void 0 ? void 0 : _a.split(',');
+if (!servers) {
+    console.log("servers env: ", process.env.SERVERS);
+    throw "No servers defined";
+}
+console.log('Setuped with servers: ', servers);
 router.get('/streams', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const streams = yield (0, exports.getStreams)(servers);
     return res.json(streams);
 }));
 const getStreams = (servers) => __awaiter(void 0, void 0, void 0, function* () {
-    const streams = [];
-    for (const server of servers) {
-        const collection = yield getStream(server);
-        for (let key in collection.live) {
-            const stream = collection.live[key];
-            streams.push({
-                server,
-                streamName: key,
-                stream
-            });
+    try {
+        const streams = [];
+        for (const server of servers) {
+            const collection = yield getStream(server);
+            for (let key in collection.live) {
+                const stream = collection.live[key];
+                streams.push({
+                    server,
+                    streamName: key,
+                    stream
+                });
+            }
         }
+        return streams;
     }
-    return streams;
+    catch (_b) {
+        return [];
+    }
 });
 exports.getStreams = getStreams;
 const getStream = (server) => __awaiter(void 0, void 0, void 0, function* () {
