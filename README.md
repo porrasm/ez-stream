@@ -30,7 +30,7 @@ You can use either the browser UI to stream or VLC player.
 Hosting is very simple
 
 - Clone this repo
-- In backend/ and relay-server/ make .env files (.env.example included)
+- In `backend/` and `relay-server/` directories make `.env` files (.env.examples included)
 - Run the `run.sh` script in the root directory
 
 Done.
