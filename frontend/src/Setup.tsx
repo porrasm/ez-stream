@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react"
 import { getStreams, ServerStream } from "./api"
+import { StreamPlayer } from "./Player"
 
 
 export const Setup = () => {
     const [streams, setStreams] = useState<ServerStream[]>()
+    const [selectedStream, setSelectedStream] = useState<ServerStream>()
 
     const loadData = async () => {
         setStreams(undefined)
@@ -16,6 +18,11 @@ export const Setup = () => {
         loadData()
     }, [])
 
+    if (selectedStream) {
+        const url = getFlvStreamUrl(selectedStream.server, selectedStream.streamName)
+        return <StreamPlayer url={url} />
+    }
+
     if (streams == undefined) {
         return <div>Loading...</div>
     }
@@ -25,6 +32,7 @@ export const Setup = () => {
 
     const selectStream = (stream: ServerStream) => {
         console.log("Select: ", stream)
+        setSelectedStream(stream)
     }
 
     return <div style={{display: "flex", flexDirection: "column"}}>
@@ -35,3 +43,5 @@ export const Setup = () => {
         <button onClick={loadData}>Reload streams</button>
     </div>
 }
+
+const getFlvStreamUrl = (server: string, streamName: string) => `${server}/live/${streamName}.flv`
