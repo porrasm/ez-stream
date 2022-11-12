@@ -41,7 +41,7 @@ export const Setup = () => {
     useEffect(() => {
         const timer = setInterval(() => {
             loadData()
-        }, 2000);
+        }, 3500);
         return () => clearInterval(timer);
     }, [loadData]);
 
