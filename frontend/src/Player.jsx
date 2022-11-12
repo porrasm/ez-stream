@@ -9,6 +9,7 @@ export const StreamPlayer = (props) => {
             //width = "800px"
             isMuted={false}
             isLive={true}
+            handleError={() => props.onError()}
           />
         </div>
       )
