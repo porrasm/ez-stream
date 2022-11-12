@@ -9,6 +9,7 @@
   "author": "porrasm",
   "license": "MIT",
   "dependencies": {
+    "dotenv": "^16.0.3",
     "node-media-server": "^2.4.9"
   }
 }
