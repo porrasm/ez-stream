@@ -1,2 +1,2 @@
 cd backend
-node index.js
+npm start
