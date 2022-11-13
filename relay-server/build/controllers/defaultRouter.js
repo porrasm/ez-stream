@@ -25,10 +25,12 @@ if (!servers) {
 }
 console.log('Setuped with servers: ', servers);
 router.get('/streams', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const streams = yield (0, exports.getStreams)(servers);
+    var _b;
+    const secret = (_b = req.query.secret) === null || _b === void 0 ? void 0 : _b.toString();
+    const streams = yield (0, exports.getStreams)(servers, secret);
     return res.json(streams);
 }));
-const getStreams = (servers) => __awaiter(void 0, void 0, void 0, function* () {
+const getStreams = (servers, hash) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const streams = [];
         for (const server of servers) {
@@ -38,13 +40,14 @@ const getStreams = (servers) => __awaiter(void 0, void 0, void 0, function* () {
                 streams.push({
                     server,
                     streamName: key,
-                    stream
+                    stream,
+                    hash
                 });
             }
         }
         return streams;
     }
-    catch (_b) {
+    catch (_c) {
         return [];
     }
 });

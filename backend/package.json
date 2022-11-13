@@ -10,7 +10,9 @@
   "author": "porrasm",
   "license": "MIT",
   "dependencies": {
+    "@types/md5": "^2.3.2",
     "dotenv": "^16.0.3",
+    "md5": "^2.3.0",
     "node-media-server": "^2.4.9"
   }
 }

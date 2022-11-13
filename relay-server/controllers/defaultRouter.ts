@@ -19,8 +19,8 @@ router.get('/streams', async (req, res) => {
 })
 
 export type ServerStream = {
-    server: string,
-    streamName: string,
+    server: string
+    streamName: string
     stream: StreamInfo
 }
 
@@ -35,7 +35,7 @@ export const getStreams = async (servers: string[]): Promise<ServerStream[]> => 
                 streams.push({
                     server,
                     streamName: key,
-                    stream
+                    stream,
                 })
             }
         }
