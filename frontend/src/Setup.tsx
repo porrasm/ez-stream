@@ -73,7 +73,7 @@ export const Setup = () => {
             if (!streamConnected) {
                 return <>
                     <button onClick={() => setSelectedStream(undefined)}>Stop watching</button>
-                    <span>Stream disconnected. Trying to reconnect... </span>
+                    <span>Stream disconnected (or invalid password). Trying to reconnect... </span>
                 </>
             }
 

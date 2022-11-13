@@ -11,6 +11,8 @@ You can use OBS to stream. Set the stream mode to custom and enter the stream de
 - Stream url: `rtmp://IP_ADDRESS/live`
 - Stream key: `YOUR_STREAM_NAME`
 
+If you use a password you can generate a stream key from the web UI.
+
 ### Watching
 You can use either the browser UI to stream or VLC player.
 
@@ -27,15 +29,18 @@ You can use either the browser UI to stream or VLC player.
 
 ## Hosting
 
-Hosting is very simple
+Hosting is very simple.
 
 - Clone this repo
 - In `backend/` and `relay-server/` directories make `.env` files (.env.examples included)
 - `relay-server/` configuration file has the `SERVERS=` value. Enter the IP address of you machine there in the correct format (format in .env.example). You can use multiple servers or host the media server on a different machine. No instructions for that but source is very simple.
+- `SECRET=` is the password for you users. It's optional in the `relay-server/` .env file.
 - Run the `run.sh` script in the root directory
 
 Done.
 
+PS: The HTTP and RTMP ports need to match the values given in the .env.example. If you want to change them you will have some problems because of the media server package I used (it has hardcoded port values).
+
 ## To do
 
-- Authentication (anyone can stream and watch now)
+- Publish authentication (anyone can stream now)
