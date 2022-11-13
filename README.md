@@ -29,7 +29,7 @@ You can use either the browser UI to stream or VLC player.
 
 ## Hosting
 
-Hosting is very simple.
+Hosting is very simple. NodeJS and NPM required.
 
 - Clone this repo
 - In `backend/` and `relay-server/` directories make `.env` files (.env.examples included)
