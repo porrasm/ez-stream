@@ -7,7 +7,8 @@ const secret = process.env.SECRET
 
 const auth = secret.length ? {
   play: true,
-  publish: true,
+  // todo fix publish auth
+  publish: false,
   secret
 } : undefined
 
