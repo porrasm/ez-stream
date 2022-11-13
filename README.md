@@ -4,6 +4,13 @@
 
 Discord streaming costs money at higher qualities. But you can now host your own streaming service. For free!
 
+## Features
+
+- Stream using OBS (or other RTMP supporting app)
+- Watch streams from browser
+- Set password for viewers
+- Share guest link without the need of passwords
+
 ## How to use
 ### Streaming
 You can use OBS to stream. Set the stream mode to custom and enter the stream details:
