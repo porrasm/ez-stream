@@ -11,43 +11,37 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getStreams = void 0;
 const axios_1 = __importDefault(require("axios"));
 const express_1 = require("express");
 const router = (0, express_1.Router)();
 const timeout = 5000;
-const servers = (_a = process.env.SERVERS) === null || _a === void 0 ? void 0 : _a.split(',');
-if (!servers) {
+const server = process.env.SERVER;
+if (!server) {
     console.log("servers env: ", process.env.SERVERS);
     throw "No servers defined";
 }
-console.log('Setuped with servers: ', servers);
+console.log('Setup with server: ', server);
 router.get('/streams', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
-    const secret = (_b = req.query.secret) === null || _b === void 0 ? void 0 : _b.toString();
-    const streams = yield (0, exports.getStreams)(servers, secret);
-    return res.json(streams);
+    const streams = yield (0, exports.getStreams)();
+    return res.json(streams.filter(s => s.stream.publisher));
 }));
-const getStreams = (servers, hash) => __awaiter(void 0, void 0, void 0, function* () {
+const getStreams = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const streams = [];
-        for (const server of servers) {
-            const collection = yield getStream(server);
-            for (let key in collection.live) {
-                const stream = collection.live[key];
-                streams.push({
-                    server,
-                    streamName: key,
-                    stream,
-                    hash
-                });
-            }
+        const collection = yield getStream(server);
+        for (let key in collection.live) {
+            const stream = collection.live[key];
+            streams.push({
+                server,
+                streamName: key,
+                stream,
+            });
         }
         return streams;
     }
-    catch (_c) {
+    catch (_a) {
         return [];
     }
 });

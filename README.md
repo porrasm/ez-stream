@@ -33,7 +33,7 @@ Hosting is very simple.
 
 - Clone this repo
 - In `backend/` and `relay-server/` directories make `.env` files (.env.examples included)
-- `relay-server/` configuration file has the `SERVERS=` value. Enter the IP address of you machine there in the correct format (format in .env.example). You can use multiple servers or host the media server on a different machine. No instructions for that but source is very simple.
+- `relay-server/` configuration file has the `SERVER=` value. Enter the IP address of you machine there in the correct format (format in .env.example). In theory you could host the media server on a different machine.
 - `SECRET=` is the password for you users. It's optional in the `relay-server/` .env file.
 - Run the `run.sh` script in the root directory
 

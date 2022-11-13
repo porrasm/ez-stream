@@ -11,3 +11,5 @@ npm run build
 cd ../backend
 echo "Build backend..."
 npm install
+
+cd ..

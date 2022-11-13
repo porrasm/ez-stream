@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { getHash, getStreams, ServerStream } from "./api"
 import { StreamPlayer } from "./Player"
+import { useSearchParams } from "react-router-dom";
 
 type StreamNameSetup = {
     name: string
@@ -8,9 +9,16 @@ type StreamNameSetup = {
     key?: string
 }
 
+type Streams = {
+    [name: string]: ServerStream
+}
+
+const streamParam = "stream"
+const streamHashParam = "passwordHash"
+
 export const Setup = () => {
-    const [streams, setStreams] = useState<ServerStream[]>()
-    const [selectedStream, setSelectedStream] = useState<ServerStream>()
+    console.log("render")
+    const [streams, setStreams] = useState<Streams>({})
     const [streamConnected, setStreamConnected] = useState(false)
     const [secret, setSecret] = useState("")
     const [streamKey, setStreamKey] = useState<StreamNameSetup>({
@@ -18,29 +26,48 @@ export const Setup = () => {
         validForDays: 30
     })
 
+    const [urlParams, setUrlParams] = useSearchParams()
+
+    const currentStreamName = urlParams.get(streamParam)
+    const existingSign = urlParams.get(streamHashParam) ?? undefined
+
+    const setCurrentStreamName = (name: string) => {
+        if (name.length) {
+            urlParams.set(streamParam, name)
+        } else {
+            urlParams.delete(streamParam)
+        }
+        urlParams.delete(streamHashParam)
+
+        setUrlParams(urlParams)
+    }
+
+    const currentStream = currentStreamName ? streams[currentStreamName] : undefined
+
     const loadData = async () => {
         const apiStreams = await getStreams()
 
-        if (selectedStream) {
-            const existStream = apiStreams.find(s => s.server === selectedStream.server && s.streamName === selectedStream.streamName)
+        const dict: Streams = {}
+        for (let stream of apiStreams) {
+            dict[stream.streamName] = stream
+        }
+
+        if (currentStreamName?.length) {
+            const existStream = dict[currentStreamName]
 
             if (!existStream) {
                 setStreamConnected(false)
             }
             if (existStream && !streamConnected) {
                 setStreamConnected(true)
-                setSelectedStream(existStream)
             }
-
-            return
         }
 
-
-        setStreams(apiStreams)
+        setStreams(dict)
     }
 
-    const onStreamError = () => {
-        console.log("stream error")
+    const onStreamError = (e: any) => {
+        console.log("stream error: ", e)
         setStreamConnected(false)
     }
 
@@ -58,42 +85,46 @@ export const Setup = () => {
     const selectStream = (stream: ServerStream) => {
         console.log("Select: ", stream)
         setStreamConnected(true)
-        setSelectedStream(stream)
+        setCurrentStreamName(stream.streamName)
     }
 
     const getContent = () => {
-        if (streams == undefined) {
-            return <div>Loading...</div>
-        }
-
-
-        if (selectedStream) {
-            const url = getFlvStreamUrl(selectedStream, secret)
+        if (currentStream) {
+            const url = getFlvStreamUrl(currentStream, secret, existingSign)
 
             if (!streamConnected) {
                 return <>
-                    <button onClick={() => setSelectedStream(undefined)}>Stop watching</button>
+                    <button onClick={() => setCurrentStreamName("")}>Stop watching</button>
                     <span>Stream disconnected (or invalid password). Trying to reconnect... </span>
+                    <div style={{ display: "flex", flexDirection: "row" }}>
+                        <span>Enter password: </span>
+                        <input value={secret} onChange={(e) => setSecret(e.target.value)}></input>
+                    </div>
                 </>
             }
+
+            const hashLink = `${window.location.origin}?${streamParam}=${currentStreamName}?${streamHashParam}=${getSign("")}`
 
             return <>
                 <div style={{ display: "flex", flexDirection: "row" }}>
                     <button onClick={() => setStreamConnected(false)}>Refresh</button>
-                    <button onClick={() => setSelectedStream(undefined)}>Stop watching</button>
+                    <button onClick={() => setCurrentStreamName("")}>Stop watching</button>
                 </div>
+                <span>People with this link can view without password: {hashLink}</span>
                 <StreamPlayer url={url} onError={onStreamError} />
             </>
         }
 
-        if (streams.length == 0) {
+        const streamList = Object.keys(streams).map(k => streams[k])
+
+        if (streamList.length === 0) {
             return <span>No streams found...</span>
         }
 
         return <>
             <span>Streams found: {streams.length}</span>
-            {streams.map(stream => <button onClick={() => selectStream(stream)}>
-                Server: {stream.server}, Stream: {stream.streamName}
+            {streamList.map(s => <button onClick={() => selectStream(s)}>
+                {s.streamName} (on server: {s.server})
             </button>)}
         </>
     }
@@ -108,14 +139,14 @@ export const Setup = () => {
     }
 
     return <div style={{ display: "flex", flexDirection: "column" }}>
-        {!selectedStream ? <div style={{ display: "flex", flexDirection: "row" }}>
+        {!currentStream ? <div style={{ display: "flex", flexDirection: "row" }}>
             <span>Enter password: </span>
             <input value={secret} onChange={(e) => setSecret(e.target.value)}></input>
         </div> : null}
         {getContent()}
 
-        {!selectedStream ? <>
-            <br/><br/><br/>
+        {!currentStream ? <>
+            <br /><br /><br />
             <span>Generate stream key (required for stream upload setup): </span>
             <div style={{ display: "flex", flexDirection: "row" }}>
                 <span>Enter stream name: </span>
@@ -135,12 +166,16 @@ export const Setup = () => {
     </div>
 }
 
-const getFlvStreamUrl = (stream: ServerStream, secret?: string) => {
+const getSign = (streamName: string, secret?: string) => {
     let sign = ""
     if (secret?.length) {
-        const hash = getHash(stream.streamName, secret, 1)
+        const hash = getHash(streamName, secret, 1)
         sign = `?sign=${hash.tomorrowEpoch}-${hash.hash}`
     }
+}
+
+const getFlvStreamUrl = (stream: ServerStream, secret?: string, existingSign?: string) => {
+    const sign = existingSign ?? getSign(stream.streamName, secret)
     return `${stream.server}/live/${stream.streamName}.flv${sign}`
 }
 
