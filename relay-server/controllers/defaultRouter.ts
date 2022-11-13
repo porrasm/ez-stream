@@ -18,6 +18,10 @@ router.get('/streams', async (req, res) => {
     return res.json(streams.filter(s => s.stream.publisher))
 })
 
+router.get('/sync', async (req, res) => {
+    return res.json({ now: new Date().getTime() })
+})
+
 export type ServerStream = {
     server: string
     streamName: string

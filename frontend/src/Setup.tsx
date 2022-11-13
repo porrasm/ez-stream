@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { getHash, getStreams, ServerStream } from "./api"
+import { getHash, getStreams, ServerStream, sync } from "./api"
 import { StreamPlayer } from "./Player"
 import { useSearchParams } from "react-router-dom";
 
@@ -18,6 +18,7 @@ const streamHashParam = "passwordHash"
 
 export const Setup = () => {
     console.log("render")
+    const [timeDiff, setTimeDiff] = useState(0)
     const [streams, setStreams] = useState<Streams>({})
     const [streamConnected, setStreamConnected] = useState(false)
     const [secret, setSecret] = useState("")
@@ -44,6 +45,8 @@ export const Setup = () => {
 
     const currentStream = currentStreamName ? streams[currentStreamName] : undefined
 
+    console.log({ currentStreamName, existingSign, currentStream, timeDiff })
+
     const loadData = async () => {
         const apiStreams = await getStreams()
 
@@ -66,6 +69,25 @@ export const Setup = () => {
         setStreams(dict)
     }
 
+    const getHashValue = (name: string, daysValid: number) => {
+        if (!secret?.length) {
+            return
+        }
+        const hash = getHash(name, secret, timeDiff, daysValid)
+        return `${hash.tomorrowEpoch}-${hash.hash}`
+    }
+
+    const getFlvStreamUrl = (stream: ServerStream, existingHash?: string) => {
+        const hashValue = existingHash ?? getHashValue(stream.streamName, 1)
+        const sign = hashValue ? `?sign=${hashValue}` : ""
+        return `${stream.server}/live/${stream.streamName}.flv${sign}`
+    }
+
+    const getStreamNameSign = (streamName: string, validForDays: number) => {
+        const sign = `?sign=${getHashValue(streamName, validForDays)}`
+        return `${streamName}${sign}`
+    }
+
     const onStreamError = (e: any) => {
         console.log("stream error: ", e)
         setStreamConnected(false)
@@ -73,6 +95,10 @@ export const Setup = () => {
 
     useEffect(() => {
         loadData()
+        sync().then(res => {
+            const diff = new Date().getTime() - res.now
+            setTimeDiff(diff)
+        })
     }, []);
 
     useEffect(() => {
@@ -90,7 +116,7 @@ export const Setup = () => {
 
     const getContent = () => {
         if (currentStream) {
-            const url = getFlvStreamUrl(currentStream, secret, existingSign)
+            const url = getFlvStreamUrl(currentStream, existingSign)
 
             if (!streamConnected) {
                 return <>
@@ -103,14 +129,17 @@ export const Setup = () => {
                 </>
             }
 
-            const hashLink = `${window.location.origin}?${streamParam}=${currentStreamName}?${streamHashParam}=${getSign("")}`
+            const hashLink = secret.length ? `${window.location.origin}/?${streamParam}=${currentStream.streamName}&${streamHashParam}=${getHashValue(currentStream.streamName, 0.125)}` : undefined
 
             return <>
                 <div style={{ display: "flex", flexDirection: "row" }}>
                     <button onClick={() => setStreamConnected(false)}>Refresh</button>
                     <button onClick={() => setCurrentStreamName("")}>Stop watching</button>
                 </div>
-                <span>People with this link can view without password: {hashLink}</span>
+                {hashLink === undefined ? null : <div style={{ display: "flex", flexDirection: "row" }}>
+                    <span>Guest stream link (valid for 3 hours): </span>
+                    <a href={hashLink}>Stream of {currentStream.streamName}</a>
+                </div>}
                 <StreamPlayer url={url} onError={onStreamError} />
             </>
         }
@@ -134,7 +163,7 @@ export const Setup = () => {
             alert("Without the password set the stream key is only your stream name")
             return
         }
-        const keySign = getStreamNameSign(streamKey.name, streamKey.validForDays, secret)
+        const keySign = getStreamNameSign(streamKey.name, streamKey.validForDays)
         setStreamKey({ ...streamKey, key: keySign })
     }
 
@@ -165,22 +194,3 @@ export const Setup = () => {
         </> : null}
     </div>
 }
-
-const getSign = (streamName: string, secret?: string) => {
-    let sign = ""
-    if (secret?.length) {
-        const hash = getHash(streamName, secret, 1)
-        sign = `?sign=${hash.tomorrowEpoch}-${hash.hash}`
-    }
-}
-
-const getFlvStreamUrl = (stream: ServerStream, secret?: string, existingSign?: string) => {
-    const sign = existingSign ?? getSign(stream.streamName, secret)
-    return `${stream.server}/live/${stream.streamName}.flv${sign}`
-}
-
-const getStreamNameSign = (streamName: string, validForDays: number, secret: string) => {
-    const hash = getHash(streamName, secret, validForDays)
-    const sign = `?sign=${hash.tomorrowEpoch}-${hash.hash}`
-    return `${streamName}${sign}`
-} 

@@ -27,6 +27,9 @@ router.get('/streams', (req, res) => __awaiter(void 0, void 0, void 0, function*
     const streams = yield (0, exports.getStreams)();
     return res.json(streams.filter(s => s.stream.publisher));
 }));
+router.get('/sync', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    return res.json({ now: new Date().getTime() });
+}));
 const getStreams = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const streams = [];
