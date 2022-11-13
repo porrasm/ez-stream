@@ -14,7 +14,7 @@ const createServer = () => {
     app.use(morgan('tiny'))
     app.use('/api', defaultRouter)
     const server = http.createServer(app)
-    server.listen(port, () => console.log(`Server running on port ${port}`))
+    server.listen(port, () => console.log(`Relay server running on port ${port}`))
 }
 
 export default createServer

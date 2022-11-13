@@ -17,7 +17,6 @@ const streamParam = "stream"
 const streamHashParam = "passwordHash"
 
 export const Setup = () => {
-    console.log("render")
     const [timeDiff, setTimeDiff] = useState(0)
     const [streams, setStreams] = useState<Streams>({})
     const [streamConnected, setStreamConnected] = useState(false)
@@ -44,8 +43,6 @@ export const Setup = () => {
     }
 
     const currentStream = currentStreamName ? streams[currentStreamName] : undefined
-
-    console.log({ currentStreamName, existingSign, currentStream, timeDiff })
 
     const loadData = async () => {
         const apiStreams = await getStreams()
@@ -89,7 +86,6 @@ export const Setup = () => {
     }
 
     const onStreamError = (e: any) => {
-        console.log("stream error: ", e)
         setStreamConnected(false)
     }
 
@@ -109,7 +105,6 @@ export const Setup = () => {
     }, [loadData]);
 
     const selectStream = (stream: ServerStream) => {
-        console.log("Select: ", stream)
         setStreamConnected(true)
         setCurrentStreamName(stream.streamName)
     }

@@ -7,7 +7,6 @@ const timeout = 5000
 const server = process.env.SERVER
 
 if (!server) {
-    console.log("servers env: ", process.env.SERVERS)
     throw "No servers defined"
 }
 
