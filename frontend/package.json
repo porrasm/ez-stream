@@ -28,7 +28,7 @@
   "scripts": {
     "start": "react-scripts start",
     "create_build": "react-scripts build",
-    "build": "npm run create_build && cp -r build ../relay-server/",
+    "build": "npm run create_build && cp -r build ../backend/",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint src/**/*.ts src/**/*.tsx"
