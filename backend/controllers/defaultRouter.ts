@@ -4,13 +4,13 @@ import { StreamCollection, StreamInfo } from './streams'
 
 const router = Router()
 const timeout = 5000
-const server = process.env.SERVER
+const externalServer = process.env.USE_EXTERNAL_SERVER
+const isLocal = Number(process.env.IS_LOCAL) === 1
 
-if (!server) {
-    throw "No servers defined"
-}
+let clientMediaServerHost = ""
+const localMediaServerHost = externalServer ?? `http://127.0.0.1:${process.env.HTTP_PORT}`
 
-console.log('Setup with server: ', server)
+console.log('Setup with server: ', localMediaServerHost)
 
 router.get('/streams', async (req, res) => {
     const streams = await getStreams()
@@ -22,7 +22,7 @@ router.get('/sync', async (req, res) => {
 })
 
 export type ServerStream = {
-    server: string
+    server: string,
     streamName: string
     stream: StreamInfo
 }
@@ -30,12 +30,12 @@ export type ServerStream = {
 export const getStreams = async (): Promise<ServerStream[]> => {
     try {
         const streams: ServerStream[] = []
-        const collection = await getStream(server)
+        const collection = await getStream(localMediaServerHost)
 
         for (let key in collection.live) {
             const stream = collection.live[key];
             streams.push({
-                server,
+                server: clientMediaServerHost,
                 streamName: key,
                 stream,
             })
@@ -49,22 +49,49 @@ export const getStreams = async (): Promise<ServerStream[]> => {
 }
 
 const getStream = async (server: string): Promise<StreamCollection> => {
-    const url = apiPath(server, "/api/streams")
-    const res = await axios({
-        method: 'get',
-        url,
-        timeout
-    })
+    try {
 
-    if (res.status === 200) {
-        return res.data as StreamCollection
+        const url = apiPath(server, "/api/streams")
+        const res = await axios({
+            method: 'get',
+            url,
+            timeout
+        })
+
+        if (res.status === 200) {
+            console.log('Got streams from server: ', server)
+            return res.data as StreamCollection
+        }
+
+        console.log('Error getting streams: ', res.status, res.statusText)
+
+    } catch (error) {
+        console.log('Error getting streams: ', error)
     }
 
-    throw "Error"
+    throw "Error getting streams"
 }
 
 const apiPath = (baseUrl: string, endpoint: string) => {
     return baseUrl + endpoint
 }
+
+const setMediaServerAddress = () => {
+    if (externalServer) {
+        clientMediaServerHost = externalServer
+        return
+    }
+    if (isLocal) {
+        clientMediaServerHost = "http://localhost:" + process.env.HTTP_PORT
+        return
+    }
+
+    const { execSync } = require("child_process");
+
+    const cmd = `curl -s http://checkip.amazonaws.com || printf "0.0.0.0"`;
+    clientMediaServerHost = "http://" + execSync(cmd).toString().trim();
+}
+
+setMediaServerAddress()
 
 export default router;
