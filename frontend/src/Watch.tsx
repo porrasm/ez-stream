@@ -16,7 +16,7 @@ type Streams = {
 const streamParam = "stream"
 const streamHashParam = "passwordHash"
 
-export const Setup = () => {
+export const Watch = () => {
     const [timeDiff, setTimeDiff] = useState(0)
     const [streams, setStreams] = useState<Streams>({})
     const [streamConnected, setStreamConnected] = useState(false)
@@ -146,7 +146,7 @@ export const Setup = () => {
         }
 
         return <>
-            <span>Streams found: {streams.length}</span>
+            <span>{"Streams found: " + streams.length}</span>
             {streamList.map(s => <button onClick={() => selectStream(s)}>
                 {s.streamName} (on server: {s.server})
             </button>)}
