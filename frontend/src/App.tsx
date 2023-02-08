@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Outlet, Route, Routes } from 'react-router-dom'
 import './App.css'
 import { Watch } from './Watch'
 
@@ -30,7 +29,7 @@ function App() {
       </div>
       {renderView()}
     </div>
-  )
+  );
 }
 
 const Stream = () => {
