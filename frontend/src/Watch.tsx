@@ -20,12 +20,17 @@ export const Watch = () => {
   const [timeDiff, setTimeDiff] = useState(0);
   const [streams, setStreams] = useState<Streams>({});
   const [streamConnected, setStreamConnected] = useState(false);
-  const [secret, setSecret] = useState("");
+  const [secret, setSecretFunc] = useState(localStorage.getItem("secret") ?? "");
   const [streamKey, setStreamKey] = useState<StreamNameSetup>({
     name: "name",
     validForDays: 30,
   });
   const urlParams = useQueryContext();
+
+  const setSecret = (secret: string) => {
+    setSecretFunc(secret);
+    localStorage.setItem("secret", secret);
+  };
 
   console.log("location: ", window.location.search);
 
@@ -139,9 +144,8 @@ export const Watch = () => {
       }
 
       const hashLink = secret.length
-        ? `${window.location.origin}/?${streamParam}=${
-            currentStream.streamName
-          }&${streamHashParam}=${getHashValue(currentStream.streamName, 0.125)}`
+        ? `${window.location.origin}/?${streamParam}=${currentStream.streamName
+        }&${streamHashParam}=${getHashValue(currentStream.streamName, 0.125)}`
         : undefined;
 
       return (
