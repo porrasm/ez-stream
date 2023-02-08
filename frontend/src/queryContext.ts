@@ -27,22 +27,30 @@ export const defaultQueryContext: QueryContextType = {
 }
 
 export function parseQuery(queryString: string) {
-  var query = new Map<string, string>();
-  var pairs = (queryString[0] === '?' ? queryString.substr(1) : queryString).split('&');
-  for (var i = 0; i < pairs.length; i++) {
-      var pair = pairs[i].split('=');
-      query.set(decodeURIComponent(pair[0]), decodeURIComponent(pair[1] || ''));
-  }
-  return query;
+    var query = new Map<string, string>();
+    var pairs = (queryString[0] === '?' ? queryString.substr(1) : queryString).split('&');
+    for (var i = 0; i < pairs.length; i++) {
+        var pair = pairs[i].split('=');
+        query.set(decodeURIComponent(pair[0]), decodeURIComponent(pair[1] || ''));
+    }
+    return query;
 }
 
-const setUrlParams = (params: Map<string, string>) => { 
-  const search = new URLSearchParams(Object.fromEntries(params)).toString()
-  window.history.pushState({}, "", `?${search}`)
+const setUrlParams = (params: Map<string, string>) => {
+    params.delete("")
+    // delete each empty param
+    params.forEach((val, key) => {
+        if (val === "") {
+            params.delete(key)
+        }
+    })
+
+    const search = new URLSearchParams(Object.fromEntries(params)).toString()
+    window.history.pushState({}, "", `?${search}`)
 }
 
 export const useQueryContext = () => React.useContext(QueryContext)
 
 export const QueryContext = React.createContext(
-  defaultQueryContext
+    defaultQueryContext
 )
