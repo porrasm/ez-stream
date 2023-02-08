@@ -6,6 +6,7 @@ import {
   QueryContext,
   useQueryContext,
 } from "./queryContext";
+import { Stream } from "./Stream";
 import { Watch } from "./Watch";
 
 // Use React Router for URL routing because its better but new version didnt work for some reason
@@ -83,9 +84,5 @@ function Views() {
     </div>
   );
 }
-
-const Stream = () => {
-  return <div>Stream</div>;
-};
 
 export default App;

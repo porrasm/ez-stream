@@ -47,6 +47,28 @@ export const sync = async (): Promise<SyncResponse> => {
     throw "Error"
 }
 
+export const uploadStream = async (blob: Blob): Promise<void> => { 
+
+    const jsonBody = {
+        streamKey: "test",
+        blob: blob
+    }
+
+    const url = apiPath(BASE_URL, "/upload")
+
+    const res = await axios({
+        method: 'post',
+        url,
+        data: jsonBody,
+    })
+
+    if (res.status === 200) {
+        return
+    }
+
+    throw "Error"
+}
+
 const apiPath = (baseUrl: string, endpoint: string) => {
     return baseUrl + endpoint
 }

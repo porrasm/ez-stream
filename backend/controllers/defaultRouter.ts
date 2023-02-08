@@ -21,6 +21,19 @@ router.get('/sync', async (req, res) => {
     return res.json({ now: new Date().getTime() })
 })
 
+type StreamUploadType = {
+    streamKey: string
+    blob: Blob
+}
+
+router.post('/upload', async (req, res) => {
+    const jsonBody: StreamUploadType = req.body
+
+    console.log('Got upload request: ', jsonBody)
+
+    res.status(200).send()
+})
+
 export type ServerStream = {
     server: string,
     streamName: string
