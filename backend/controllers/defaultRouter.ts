@@ -4,7 +4,7 @@ import { StreamCollection, StreamInfo } from './streams'
 
 const router = Router()
 const timeout = 5000
-const externalServer = process.env.USE_EXTERNAL_SERVER
+const externalServer = process.env.EXTERNAL_SERVER
 const isLocal = Number(process.env.IS_LOCAL) === 1
 
 let clientMediaServerHost = ""
@@ -18,7 +18,7 @@ router.get('/streams', async (req, res) => {
 })
 
 router.get('/sync', async (req, res) => {
-    return res.json({ now: new Date().getTime() })
+    return res.json({ now: new Date().getTime(), streamServer: clientMediaServerHost })
 })
 
 type StreamUploadType = {

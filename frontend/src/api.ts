@@ -29,6 +29,7 @@ export const getStreams = async (): Promise<ServerStream[]> => {
 }
 
 type SyncResponse = {
+    streamServer: string,
     now: number
 }
 export const sync = async (): Promise<SyncResponse> => {
@@ -47,7 +48,7 @@ export const sync = async (): Promise<SyncResponse> => {
     throw "Error"
 }
 
-export const uploadStream = async (blob: Blob): Promise<void> => { 
+export const uploadStream = async (blob: Blob): Promise<void> => {
 
     const jsonBody = {
         streamKey: "test",
@@ -78,4 +79,30 @@ export const getHash = (streamName: string, secret: string, timeDiff: number, au
     const tomorrowEpoch = Math.round(tomorrovMillis / 1000)
     const hash = md5(`/live/${streamName}-${tomorrowEpoch}-${secret}`)
     return { hash, tomorrowEpoch }
+}
+
+export const startStreamUpload = (stream: MediaStream, streamKey: string, statusEvents: (s: string) => void) => {
+    const ws = new WebSocket("ws://localhost:5000/");
+    const recorderOptions = {
+        mimeType: 'video/webm',
+        videoBitsPerSecond: 200000 // 0.2 Mbit/sec.
+    };
+    const mediaRecorder = new MediaRecorder(stream, recorderOptions);
+    mediaRecorder.start(1000); // 1000 - the number of milliseconds to record into each Blob
+    mediaRecorder.ondataavailable = (event) => {
+        statusEvents('Got blob data: ' + event.data.size + ' bytes')
+        if (event.data && event.data.size > 0) {
+            ws.send(event.data);
+        }
+    };
+
+    ws.onclose = () => {
+        try {
+            mediaRecorder.stop();
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
+    return ws;
 }

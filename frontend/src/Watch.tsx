@@ -18,6 +18,7 @@ const streamHashParam = "passwordHash";
 
 export const Watch = () => {
   const [timeDiff, setTimeDiff] = useState(0);
+  const [streamServer, setStreamServer] = useState<string>();
   const [streams, setStreams] = useState<Streams>({});
   const [streamConnected, setStreamConnected] = useState(false);
   const [secret, setSecretFunc] = useState(localStorage.getItem("secret") ?? "");
@@ -104,6 +105,7 @@ export const Watch = () => {
     sync().then((res) => {
       const diff = new Date().getTime() - res.now;
       setTimeDiff(diff);
+      setStreamServer(res.streamServer);
     });
   }, []);
 
@@ -238,6 +240,7 @@ export const Watch = () => {
             ></input>
           </div>
           <button onClick={generateKey}>Generate key</button>
+          {streamKey.key ? <span>Stream server: {streamServer}</span> : null}
           {streamKey.key ? <span>Generated key: {streamKey.key}</span> : null}
         </>
       ) : null}

@@ -1,6 +1,7 @@
 require('dotenv').config()
 const NodeMediaServer = require('node-media-server');
 
+
 const rtmpPort = process.env.RTMP_PORT ?? 1935
 const httpPort = process.env.HTTP_PORT ?? 8000
 const secret = process.env.SECRET
@@ -29,3 +30,4 @@ const config = {
 
 var nms = new NodeMediaServer(config)
 nms.run();
+

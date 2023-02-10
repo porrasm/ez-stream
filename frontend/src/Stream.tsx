@@ -1,7 +1,6 @@
 import axios from "axios";
 import { useState } from "react";
-import { useReactMediaRecorder } from "react-media-recorder";
-import { uploadStream } from "./api";
+import { startStreamUpload, uploadStream } from "./api";
 
 export function Stream() {
   // const startSream = async () => {
@@ -11,6 +10,15 @@ export function Stream() {
   // };
 
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const [ws, setWs] = useState<WebSocket>();
+  const [status, setStatus] = useState("Not recording");
+
+  const closeSocket = () => { 
+    if (ws) {
+      ws.close();
+    }
+    setStatus("Not recording");
+  }
 
   async function startCapture(displayMediaOptions: DisplayMediaStreamOptions) {
     await stopCapture();
@@ -19,39 +27,26 @@ export function Stream() {
       const captureStream = await navigator.mediaDevices.getDisplayMedia(
         displayMediaOptions
       );
-      const mediaRecorder = new MediaRecorder(captureStream);
-
-      mediaRecorder.start(250);
-      mediaRecorder.ondataavailable = (e) => {
-        console.log("ondataavailable: ", e);
-        uploadStream(e.data)
-      };
 
       console.log("captureStream: ", captureStream);
       setStream(captureStream);
+      setWs(startStreamUpload(captureStream, "key", setStatus));
     } catch (err) {
       console.error(`Error: ${err}`);
     }
   }
 
   async function stopCapture() {
+    closeSocket();
     if (stream) {
       const tracks = stream.getTracks();
       tracks.forEach((track) => track.stop());
     }
   }
 
-  const { status, startRecording, stopRecording, previewStream, mediaBlobUrl } =
-    useReactMediaRecorder({ video: true, screen: true, audio: true });
-
-  if (previewStream) {
-    console.log("previewStream: ", previewStream);
-  }
-
   return (
     <div>
-      <p>{status}</p>
-      <button onClick={startRecording}>Start Recording</button>
+      <p>Status: {status}</p>
       <button
         onClick={() =>
           startCapture({
@@ -60,11 +55,9 @@ export function Stream() {
           })
         }
       >
-        Start Recording 2
+        Start Recording
       </button>
-      <button onClick={stopRecording}>Stop Recording</button>
-      <button onClick={stopCapture}>Stop Recording 2</button>
-      <video src={mediaBlobUrl} controls autoPlay loop />
+      <button onClick={stopCapture}>Stop Recording</button>
     </div>
   );
 }
