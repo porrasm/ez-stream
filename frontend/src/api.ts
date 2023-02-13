@@ -83,9 +83,11 @@ export const getHash = (streamName: string, secret: string, timeDiff: number, au
 
 export const startStreamUpload = (stream: MediaStream, streamKey: string, statusEvents: (s: string) => void) => {
     const ws = new WebSocket("ws://localhost:5000/");
+    // set ws.binaryType = 'arraybuffer' if you want to send ArrayBuffer instead of Blob
+    ws.binaryType = 'blob';
     const recorderOptions = {
         mimeType: 'video/webm',
-        videoBitsPerSecond: 200000 // 0.2 Mbit/sec.
+        //videoBitsPerSecond: 20000000 // 20 Mbit/sec.,
     };
     const mediaRecorder = new MediaRecorder(stream, recorderOptions);
     mediaRecorder.start(1000); // 1000 - the number of milliseconds to record into each Blob

@@ -14,6 +14,7 @@ const auth = secret.length ? {
 } : undefined
 
 const config = {
+  logType: 3,
   rtmp: {
     port: rtmpPort,
     chunk_size: 1000,
